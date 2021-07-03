@@ -1,0 +1,8 @@
+subscription GET_FADERS($x: Int, $dx: Int, $y: Int, $dy: Int) {
+  faders(x: $x, dx: $dx, y: $y, dy: $dy) {
+    id
+    index
+    layer
+    sublayer
+  }
+}

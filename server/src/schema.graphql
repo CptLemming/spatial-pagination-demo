@@ -1,0 +1,26 @@
+enum Sublayer {
+  A
+  B
+}
+
+type Fader {
+  id: String!
+  index: Int!
+  layer: Int!
+  sublayer: Sublayer!
+}
+
+type Config {
+  numFaders: Int!
+  numLayers: Int!
+  numSublayers: Int!
+}
+
+type Query {
+  faders(x: Int, y: Int, dx: Int, dy: Int): [Fader]
+  config: Config
+}
+
+type Subscription {
+  faders(x: Int, y: Int, dx: Int, dy: Int): [Fader]
+}

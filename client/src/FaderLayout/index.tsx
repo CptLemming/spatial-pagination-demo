@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@apollo/client";
 import { FixedSizeGrid as Grid, GridOnItemsRenderedProps } from "react-window";
 import { loader } from "graphql.macro";
@@ -18,9 +18,10 @@ interface Props {
 
 const FaderLayout = ({ height, width, config }: Props) => {
   const isInitialRender = useRef(true);
+  const [selectedFaderId, setSelectedFaderId] = useState<String>();
   // Initial query is a HTTP request: With compression this is 900 B vs 7.9 kB
   // Next payload will be received by websocket
-  const { data, subscribeToMore } = useQuery<{ faders: [Fader] }>(
+  const { data, loading, subscribeToMore } = useQuery<{ faders: [Fader] }>(
     GET_INITIAL_FADERS,
     {
       // Grab enough items to fill the current screen
@@ -40,10 +41,13 @@ const FaderLayout = ({ height, width, config }: Props) => {
     (data?.faders || []).forEach((fader) => {
       results[fader.id] = fader;
     });
+
     return {
       faders: results,
+      selected: selectedFaderId,
+      onSelect: setSelectedFaderId,
     };
-  }, [data?.faders]);
+  }, [data?.faders, selectedFaderId, setSelectedFaderId]);
 
   const onItemsRendered = useCallback(
     ({
@@ -89,6 +93,8 @@ const FaderLayout = ({ height, width, config }: Props) => {
     },
     [subscribeToMore]
   );
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Grid

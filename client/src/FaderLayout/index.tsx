@@ -18,7 +18,7 @@ interface Props {
 
 const FaderLayout = ({ height, width, config }: Props) => {
   const isInitialRender = useRef(true);
-  // Initial query is a HTTP request
+  // Initial query is a HTTP request: With compression this is 900 B vs 7.9 kB
   // Next payload will be received by websocket
   const { data, subscribeToMore } = useQuery<{ faders: [Fader] }>(
     GET_INITIAL_FADERS,

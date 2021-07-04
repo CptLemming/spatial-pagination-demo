@@ -1,11 +1,10 @@
 import React, { memo } from "react";
 
+import { getFaderId } from "./utils";
 import { FaderContainer, FaderHeader, FaderContent } from "./styled";
 
 const FaderStrip = memo(({ data, columnIndex, rowIndex, style }: any) => {
-  const faderId = `L${Math.floor(rowIndex / 2) + 1}F${columnIndex + 1}${
-    rowIndex % 2 === 0 ? "" : "b"
-  }`;
+  const faderId = getFaderId(columnIndex, rowIndex);
   const fader = data.faders[faderId];
   const isSelected = data.selected === faderId;
 

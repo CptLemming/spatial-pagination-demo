@@ -5,6 +5,7 @@ import { loader } from "graphql.macro";
 
 import { Config, Fader } from "../types";
 import { FADER_WIDTH, FADER_HEIGHT } from "../config";
+import { getMoreFaders } from "./utils";
 import FaderStrip from "./FaderStrip";
 
 const GET_INITIAL_FADERS = loader("./initialFaders.graphql");
@@ -62,36 +63,40 @@ const FaderLayout = ({ height, width, config }: Props) => {
         return;
       }
       // Fetch the items that are now within the view
-      // TODO Prevent querying already loaded items by limiting the scope
-      subscribeToMore({
-        document: GET_MORE_FADERS,
-        variables: {
-          x: visibleColumnStartIndex,
-          y: visibleRowStartIndex,
-          dx: visibleColumnStopIndex + 2,
-          dy: visibleRowStopIndex + 2,
-        },
-        updateQuery: (prev, { subscriptionData }) => {
-          if (!subscriptionData.data) return prev;
+      // But limit requesting items not already fetched
+      const variables = getMoreFaders(
+        itemData.faders,
+        visibleColumnStartIndex,
+        visibleRowStartIndex,
+        visibleColumnStopIndex + 2,
+        visibleRowStopIndex + 2
+      );
+      if (variables.dx !== 0 && variables.dy !== 0) {
+        subscribeToMore({
+          document: GET_MORE_FADERS,
+          variables,
+          updateQuery: (prev, { subscriptionData }) => {
+            if (!subscriptionData.data) return prev;
 
-          // Merge the existing items with the new ones
-          const loadedFaders: Record<string, Fader> = {};
+            // Merge the existing items with the new ones
+            const loadedFaders: Record<string, Fader> = {};
 
-          (prev.faders || []).forEach((fader) => {
-            loadedFaders[fader.id] = fader;
-          });
+            (prev.faders || []).forEach((fader) => {
+              loadedFaders[fader.id] = fader;
+            });
 
-          subscriptionData.data.faders.forEach((fader) => {
-            loadedFaders[fader.id] = fader;
-          });
+            subscriptionData.data.faders.forEach((fader) => {
+              loadedFaders[fader.id] = fader;
+            });
 
-          return {
-            faders: Object.values(loadedFaders) as [Fader],
-          };
-        },
-      });
+            return {
+              faders: Object.values(loadedFaders) as [Fader],
+            };
+          },
+        });
+      }
     },
-    [subscribeToMore]
+    [itemData.faders, subscribeToMore]
   );
 
   if (loading) return <div>Loading...</div>;

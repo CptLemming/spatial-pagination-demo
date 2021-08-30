@@ -3,5 +3,6 @@ query {
     numFaders
     numLayers
     numSublayers
+    numSections
   }
 }

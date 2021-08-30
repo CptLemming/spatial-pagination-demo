@@ -8,16 +8,25 @@ type Fader {
   index: Int!
   layer: Int!
   sublayer: Sublayer!
+  section: Int!
+}
+
+type UserSplit {
+  id: String!
+  user: Int!
+  firstSection: Int!
 }
 
 type Config {
   numFaders: Int!
   numLayers: Int!
   numSublayers: Int!
+  numSections: Int!
 }
 
 type Query {
   faders(x: Int, y: Int, dx: Int, dy: Int): [Fader]
+  userSplits: [UserSplit]
   config: Config
 }
 

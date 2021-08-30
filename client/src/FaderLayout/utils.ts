@@ -1,4 +1,4 @@
-import { Fader } from "../types";
+import { Fader, UserSplit } from "../types";
 
 export const range = (numItems: number): number[] =>
   new Array(numItems).fill(undefined).map((_, i) => i);
@@ -7,6 +7,21 @@ export const getFaderId = (columnIndex: number, rowIndex: number): string =>
   `L${Math.floor(rowIndex / 2) + 1}F${columnIndex + 1}${
     rowIndex % 2 === 0 ? "" : "b"
   }`;
+
+export const getUserSections = (
+  userSplits: UserSplit[],
+  numSections: number
+) => {
+  const userSections: Record<number, number> = {};
+
+  userSplits.forEach((userSplit) => {
+    for (let i = userSplit.firstSection; i < numSections; i++) {
+      userSections[i] = userSplit.user;
+    }
+  });
+
+  return userSections;
+};
 
 /**
  * Calculate the smallest bounds required to fetch the new views worth of items

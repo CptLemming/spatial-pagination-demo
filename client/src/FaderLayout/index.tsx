@@ -1,12 +1,17 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 import { useQuery } from "@apollo/client";
-import { FixedSizeGrid as Grid, GridOnItemsRenderedProps } from "react-window";
+import {
+  FixedSizeGrid as Grid,
+  GridOnItemsRenderedProps,
+  GridOnScrollProps,
+} from "react-window";
 import { loader } from "graphql.macro";
 
-import { Config, Fader } from "../types";
+import { Config, Fader, UserSplit } from "../types";
 import { FADER_WIDTH, FADER_HEIGHT } from "../config";
-import { getMoreFaders } from "./utils";
+import { getMoreFaders, getUserSections } from "./utils";
 import FaderStrip from "./FaderStrip";
+import LayerStrip from "./LayerStrip";
 
 const GET_INITIAL_FADERS = loader("./initialFaders.graphql");
 const GET_MORE_FADERS = loader("./moreFaders.graphql");
@@ -15,11 +20,14 @@ interface Props {
   height: number;
   width: number;
   config: Config;
+  userSplits: UserSplit[];
 }
 
-const FaderLayout = ({ height, width, config }: Props) => {
+const FaderLayout = ({ height, width, config, userSplits }: Props) => {
   const isInitialRender = useRef(true);
-  const [selectedFaderId, setSelectedFaderId] = useState<String>();
+  const sidebarRef = useRef<Grid | null>(null);
+  const [scrollPosition, setScrollPosition] = useState([0, 0]);
+  const [selectedFaderId, setSelectedFaderId] = useState<string>();
   // Initial query is a HTTP request: With compression this is 900 B vs 7.9 kB
   // Next payload will be received by websocket
   const { data, loading, subscribeToMore } = useQuery<{ faders: [Fader] }>(
@@ -35,6 +43,11 @@ const FaderLayout = ({ height, width, config }: Props) => {
     }
   );
 
+  const userSections = useMemo(
+    () => getUserSections(userSplits, config.numSections),
+    [userSplits, config.numSections]
+  );
+
   // Memo everything for best performance
   const itemData = useMemo(() => {
     const results: Record<string, Fader> = {};
@@ -45,10 +58,30 @@ const FaderLayout = ({ height, width, config }: Props) => {
 
     return {
       faders: results,
+      height,
+      userSplits,
+      userSections,
       selected: selectedFaderId,
+      scrollPosition,
       onSelect: setSelectedFaderId,
     };
-  }, [data?.faders, selectedFaderId, setSelectedFaderId]);
+  }, [
+    height,
+    data?.faders,
+    userSplits,
+    userSections,
+    selectedFaderId,
+    scrollPosition,
+    setSelectedFaderId,
+  ]);
+
+  const sidebarItemData = useMemo(() => {
+    return {
+      height,
+      selected: selectedFaderId,
+      scrollPosition,
+    };
+  }, [height, selectedFaderId, scrollPosition]);
 
   const onItemsRendered = useCallback(
     ({
@@ -99,21 +132,49 @@ const FaderLayout = ({ height, width, config }: Props) => {
     [itemData.faders, subscribeToMore]
   );
 
+  const onGridScroll = useCallback(
+    ({ scrollLeft, scrollTop }: GridOnScrollProps) => {
+      if (sidebarRef.current) {
+        sidebarRef.current.scrollTo({ scrollLeft: 0, scrollTop });
+      }
+      setScrollPosition([scrollLeft, scrollTop]);
+    },
+    []
+  );
+
   if (loading) return <div>Loading...</div>;
 
   return (
-    <Grid
-      columnCount={config.numFaders || 0}
-      columnWidth={FADER_WIDTH}
-      height={height}
-      rowCount={(config.numLayers || 0) * (config.numSublayers || 0)}
-      rowHeight={FADER_HEIGHT}
-      width={width}
-      itemData={itemData}
-      onItemsRendered={onItemsRendered}
-    >
-      {FaderStrip}
-    </Grid>
+    <div style={{ display: "flex", flexDirection: "row", width }}>
+      <Grid
+        ref={sidebarRef}
+        columnCount={1}
+        columnWidth={50}
+        height={height}
+        rowCount={(config.numLayers || 0) * (config.numSublayers || 0)}
+        rowHeight={FADER_HEIGHT * 2}
+        width={50}
+        itemData={sidebarItemData}
+        style={{
+          overflow: "hidden",
+        }}
+      >
+        {LayerStrip}
+      </Grid>
+      <Grid
+        columnCount={config.numFaders || 0}
+        columnWidth={FADER_WIDTH}
+        height={height}
+        rowCount={(config.numLayers || 0) * (config.numSublayers || 0)}
+        rowHeight={FADER_HEIGHT}
+        width={width - 50}
+        itemData={itemData}
+        onItemsRendered={onItemsRendered}
+        onScroll={onGridScroll}
+      >
+        {FaderStrip}
+      </Grid>
+    </div>
   );
 };
 

@@ -14,11 +14,11 @@ import { GlobalStyle } from "./styled";
 import App from "./App";
 
 const httpLink = new HttpLink({
-  uri: "http://172.23.13.225:4000/graphql",
+  uri: "http://172.26.57.252:4000/graphql",
 });
 
 const wsLink = new WebSocketLink({
-  uri: "ws://172.23.13.225:4000/graphql",
+  uri: "ws://172.26.57.252:4000/graphql",
   options: {
     reconnect: true,
   },

@@ -4,5 +4,6 @@ subscription GET_FADERS($x: Int, $dx: Int, $y: Int, $dy: Int) {
     index
     layer
     sublayer
+    section
   }
 }

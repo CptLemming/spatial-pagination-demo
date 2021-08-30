@@ -1,0 +1,7 @@
+query {
+  userSplits {
+    id
+    user
+    firstSection
+  }
+}

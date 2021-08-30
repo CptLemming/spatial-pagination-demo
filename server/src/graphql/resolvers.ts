@@ -2,6 +2,7 @@ import { startWith } from "rxjs/operators";
 import { from } from "ix/asynciterable";
 
 import faders from "../data/faders";
+import userSplits from "../data/userSplits";
 import config from "../data/config";
 import { filterFaders } from "../utils";
 import fadersSubject from "../publishers/faders";
@@ -11,6 +12,7 @@ const resolvers = {
     faders: (_parent: unknown, { x = 0, y = 0, dx = 5, dy = 5 }) => {
       return filterFaders(faders, x, y, dx, dy);
     },
+    userSplits: () => userSplits,
     config: () => config,
   },
   Subscription: {

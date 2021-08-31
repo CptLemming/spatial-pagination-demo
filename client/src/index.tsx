@@ -12,13 +12,14 @@ import { WebSocketLink } from "@apollo/client/link/ws";
 
 import { GlobalStyle } from "./styled";
 import App from "./App";
+import { BACKEND_HOSTNAME } from "./config";
 
 const httpLink = new HttpLink({
-  uri: "http://172.26.57.252:4000/graphql",
+  uri: `http://${BACKEND_HOSTNAME}:4000/graphql`,
 });
 
 const wsLink = new WebSocketLink({
-  uri: "ws://172.26.57.252:4000/graphql",
+  uri: `ws://${BACKEND_HOSTNAME}:4000/graphql`,
   options: {
     reconnect: true,
   },

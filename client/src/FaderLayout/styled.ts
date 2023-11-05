@@ -183,7 +183,7 @@ export const UserSplit = styled.div<{
   isFirstInSection: boolean;
   isLastInSection: boolean;
 }>`
-  position: absolute;
+  position: sticky;
   bottom: 0;
   font-size: 0.75rem;
   background: ${(p) => userSplitColours[p.userArea]};

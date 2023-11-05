@@ -1,0 +1,319 @@
+version: "2.3"
+
+services:
+  storybook:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+
+  hector:
+    build:
+      context: .
+      dockerfile: backend/apps/assist/Dockerfile
+      args:
+        - PRODUCT=HECTOR
+        - PLATFORM=ASSIST
+        - BACKEND_PORT=8001
+    links:
+      - mcs-hector
+    volumes_from:
+      - mcs-hector:rw
+    environment:
+      - PRODUCT=HECTOR
+      - PLATFORM=ASSIST
+      - MCS_HOSTNAME=mcs-hector
+      - CORE_CONFIG_HOSTNAME=mcs-hector
+      - BACKEND_PORT=8001
+
+  apollo:
+    build:
+      context: .
+      dockerfile: backend/apps/assist/Dockerfile
+      args:
+        - PRODUCT=APOLLO
+        - PLATFORM=ASSIST
+        - BACKEND_PORT=8011
+    links:
+      - mcs-apollo
+    volumes_from:
+      - mcs-apollo:rw
+    environment:
+      - PRODUCT=APOLLO
+      - PLATFORM=ASSIST
+      - MCS_HOSTNAME=mcs-apollo
+      - CORE_CONFIG_HOSTNAME=mcs-apollo
+      - BACKEND_PORT=8011
+
+  ivor:
+    build:
+      context: .
+      dockerfile: backend/apps/assist/Dockerfile
+      args:
+        - PRODUCT=IVOR
+        - PLATFORM=ASSIST
+        - BACKEND_PORT=8021
+    links:
+      - mcs-ivor
+    volumes_from:
+      - mcs-ivor:rw
+    environment:
+      - PRODUCT=IVOR
+      - PLATFORM=ASSIST
+      - MCS_HOSTNAME=mcs-ivor
+      - CORE_CONFIG_HOSTNAME=mcs-ivor
+      - BACKEND_PORT=8021
+
+  hectorconfigure:
+    build:
+      context: .
+      dockerfile: backend/apps/coreconfig/Dockerfile
+      args:
+        - PRODUCT=HECTOR
+        - PLATFORM=CORE_CONFIG
+        - BACKEND_PORT=8101
+    links:
+      - mcs-hector
+    environment:
+      - PRODUCT=HECTOR
+      - PLATFORM=CORE_CONFIG
+      - MCS_HOSTNAME=mcs-hector
+      - CORE_CONFIG_HOSTNAME=mcs-hector
+      - BACKEND_PORT=8101
+
+  apolloconfigure:
+    build:
+      context: .
+      dockerfile: backend/apps/coreconfig/Dockerfile
+      args:
+        - PRODUCT=APOLLO
+        - PLATFORM=CORE_CONFIG
+        - BACKEND_PORT=8111
+    links:
+      - mcs-apollo
+    environment:
+      - PRODUCT=APOLLO
+      - PLATFORM=CORE_CONFIG
+      - MCS_HOSTNAME=mcs-apollo
+      - CORE_CONFIG_HOSTNAME=mcs-apollo
+      - BACKEND_PORT=8111
+
+  ivorconfigure:
+    build:
+      context: .
+      dockerfile: backend/apps/coreconfig/Dockerfile
+      args:
+        - PRODUCT=IVOR
+        - PLATFORM=CORE_CONFIG
+        - BACKEND_PORT=8121
+    links:
+      - mcs-ivor
+    environment:
+      - PRODUCT=IVOR
+      - PLATFORM=CORE_CONFIG
+      - MCS_HOSTNAME=mcs-ivor
+      - CORE_CONFIG_HOSTNAME=mcs-ivor
+      - BACKEND_PORT=8121
+
+  calrecupdater:
+    build:
+      context: .
+      dockerfile: backend/apps/updater/Dockerfile
+    links:
+      - mcs-hector
+
+  connect-discovery:
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect:2538
+
+  connect:
+    build:
+      context: .
+      dockerfile: backend/apps/connect/Dockerfile
+      args:
+        - PRODUCT=HECTOR
+        - PLATFORM=CONNECT
+        - BACKEND_PORT=8401
+    links:
+      - connect-discovery
+      - typerslot0
+      - typerslot1
+      - aesboxslot0
+      - analogueboxslot0
+      - impulseslot0
+      - impulseslot1
+      - impulseslot2
+      - impulseslot3
+    environment:
+      - PRODUCT=HECTOR
+      - PLATFORM=CONNECT
+      - CONNECT_IP=connect-discovery
+      - BACKEND_PORT=8401
+
+  mcs-hector:
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/mcs-hector:2612
+    volumes:
+      - /var/lib/calrec
+    environment:
+      - PRISEC=PRIMARY
+
+  mcs-hector-twin:
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/mcs-hector:2612
+    volumes:
+      - /var/lib/calrec
+    environment:
+      - PRISEC=SECONDARY
+
+  mcs-apollo:
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/mcs-apollo:1205
+    volumes:
+      - /var/lib/calrec
+    environment:
+      - PRISEC=PRIMARY
+
+  mcs-ivor:
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/mcs-ivor:127
+    volumes:
+      - /var/lib/calrec
+    environment:
+      - PRISEC=PRIMARY
+
+  typerslot0:
+    hostname: FB464176-0000-0000-B6C9-14E1ABA93A3F-0-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FB464176-0000-0000-B6C9-14E1ABA93A3F-0-pri
+      - DEVICE_HID=FB464176-0000-0000-B6C9-14E1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-14E1ABA93A3F-0-pri-5
+      - DEVICE_NAME=TypeR
+      - DEVICE_TYPE=typer
+      - DEVICE_SLOT=0
+      - DEVICE_INTERFACE=eth0
+
+  typerslot1:
+    hostname: FB464176-0000-0000-B6C9-14E1ABA93A3F-1-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FB464176-0000-0000-B6C9-14E1ABA93A3F-1-pri
+      - DEVICE_HID=FB464176-0000-0000-B6C9-14E1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-14E1ABA93A3F-1-pri-5
+      - DEVICE_NAME=TypeR
+      - DEVICE_TYPE=typer
+      - DEVICE_SLOT=1
+      - DEVICE_INTERFACE=eth0
+
+  typerslot2:
+    hostname: FB464176-0000-0000-B6C9-14E1ABA93A3F-0-sec
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FB464176-0000-0000-B6C9-14E1ABA93A3F-0-sec
+      - DEVICE_HID=FB464176-0000-0000-B6C9-14E1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-14E1ABA93A3F-0-sec-5
+      - DEVICE_NAME=TypeR
+      - DEVICE_TYPE=typer
+      - DEVICE_SLOT=2
+      - DEVICE_INTERFACE=eth0
+
+  typerslot3:
+    hostname: FB464176-0000-0000-B6C9-14E1ABA93A3F-1-sec
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FB464176-0000-0000-B6C9-14E1ABA93A3F-1-sec
+      - DEVICE_HID=FB464176-0000-0000-B6C9-14E1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-14E1ABA93A3F-1-sec-5
+      - DEVICE_NAME=TypeR
+      - DEVICE_TYPE=typer
+      - DEVICE_SLOT=3
+      - DEVICE_INTERFACE=eth0
+
+  aesboxslot0:
+    hostname: FB464176-0000-0000-B6C9-24E1ABA93A3F-0-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FB464176-0000-0000-B6C9-24E1ABA93A3F-0-pri
+      - DEVICE_HID=FB464176-0000-0000-B6C9-24E1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-24E1ABA93A3F-0-pri-5
+      - DEVICE_NAME=aes-box
+      - DEVICE_MODEL=Type-R AES I/O
+      - DEVICE_TYPE=iobox
+      - DEVICE_SLOT=0
+      - DEVICE_INTERFACE=eth0
+
+  analogueboxslot0:
+    hostname: FC464176-0000-0000-B6C9-24F1ABA93A3F-0-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=FC464176-0000-0000-B6C9-24F1ABA93A3F-0-pri
+      - DEVICE_HID=FC464176-0000-0000-B6C9-24F1ABA93A3F
+      - DEVICE_AVAHI_NAME=UR6500-24F1ABA93A3F-0-pri-5
+      - DEVICE_NAME=analogue-box
+      - DEVICE_MODEL=Type-R Analogue I/O
+      - DEVICE_TYPE=iobox
+      - DEVICE_SLOT=0
+      - DEVICE_INTERFACE=eth0
+
+  impulseslot0:
+    hostname: IM464176-0000-0000-B6C9-24E1ABA93A3A-0-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=IM464176-0000-0000-B6C9-24E1ABA93A3A-0-pri
+      - DEVICE_HID=IM464176-0000-0000-B6C9-24E1ABA93A3A
+      - DEVICE_AVAHI_NAME=UR6500-24E1ABA93A3A-0-pri-5
+      - DEVICE_NAME=Impulse
+      - DEVICE_TYPE=impulse
+      - DEVICE_SLOT=0
+      - DEVICE_INTERFACE=eth0
+
+  impulseslot1:
+    hostname: IM464176-0000-0000-B6C9-24E1ABA93A3A-1-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=IM464176-0000-0000-B6C9-24E1ABA93A3A-1-pri
+      - DEVICE_HID=IM464176-0000-0000-B6C9-24E1ABA93A3A
+      - DEVICE_AVAHI_NAME=UR6500-24E1ABA93A3A-1-pri-5
+      - DEVICE_NAME=Impulse
+      - DEVICE_TYPE=impulse
+      - DEVICE_SLOT=1
+      - DEVICE_INTERFACE=eth0
+
+  impulseslot2:
+    hostname: IM464176-0000-0000-B6C9-24E1ABA93A3A-2-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=IM464176-0000-0000-B6C9-24E1ABA93A3A-2-pri
+      - DEVICE_HID=IM464176-0000-0000-B6C9-24E1ABA93A3A
+      - DEVICE_AVAHI_NAME=UR6500-24E1ABA93A3A-2-pri-5
+      - DEVICE_NAME=Impulse
+      - DEVICE_TYPE=impulse
+      - DEVICE_SLOT=2
+      - DEVICE_INTERFACE=eth0
+
+  impulseslot3:
+    hostname: IM464176-0000-0000-B6C9-24E1ABA93A3A-3-pri
+    image: calrec-dockerregistry-01.calrecaudio.com:5000/calrec/connect-device:0.0.30
+    links:
+      - connect-discovery
+    environment:
+      - DEVICE_HOSTNAME=IM464176-0000-0000-B6C9-24E1ABA93A3A-3-pri
+      - DEVICE_HID=IM464176-0000-0000-B6C9-24E1ABA93A3A
+      - DEVICE_AVAHI_NAME=UR6500-24E1ABA93A3A-3-pri-5
+      - DEVICE_NAME=Impulse
+      - DEVICE_TYPE=impulse
+      - DEVICE_SLOT=3
+      - DEVICE_INTERFACE=eth0

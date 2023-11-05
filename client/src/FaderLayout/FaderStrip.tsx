@@ -1,4 +1,4 @@
-import React, { memo, useMemo } from "react";
+import React, { memo } from "react";
 import { areEqual } from "react-window";
 
 import { getFaderId } from "./utils";
@@ -9,7 +9,6 @@ import {
   UserSplit as StyledUserSplit,
 } from "./styled";
 import { UserSplit } from "../types";
-import { FADER_HEIGHT } from "../config";
 
 const FaderStrip = memo(({ data, columnIndex, rowIndex, style }: any) => {
   const faderId = getFaderId(columnIndex, rowIndex);
@@ -31,26 +30,6 @@ const FaderStrip = memo(({ data, columnIndex, rowIndex, style }: any) => {
   const isLastInUserArea =
     isLastInSection && currentSectionUserArea !== nextSectionUserArea;
 
-  const styles = useMemo(() => {
-    if (isFirstInUserArea || isLastInUserArea) {
-      const topPosition = rowIndex * FADER_HEIGHT;
-      const scrollTop = data.scrollPosition[1];
-      const height = data.height;
-      return {
-        transform: `translateY(calc(${
-          scrollTop + height - topPosition - FADER_HEIGHT - 18
-        }px))`,
-      };
-    }
-    return undefined;
-  }, [
-    isFirstInUserArea,
-    isLastInUserArea,
-    rowIndex,
-    data.scrollPosition,
-    data.height,
-  ]);
-
   return (
     <FaderContainer
       isFirstInUserArea={isFirstInUserArea}
@@ -69,7 +48,6 @@ const FaderStrip = memo(({ data, columnIndex, rowIndex, style }: any) => {
           userArea={userSplit.user}
           isFirstInSection={isFirstInUserArea}
           isLastInSection={isLastInUserArea}
-          style={styles}
         >
           {`User ${userSplit.user + 1}`}
         </StyledUserSplit>

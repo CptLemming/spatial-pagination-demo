@@ -62,7 +62,6 @@ const FaderLayout = ({ height, width, config, userSplits }: Props) => {
       userSplits,
       userSections,
       selected: selectedFaderId,
-      scrollPosition,
       onSelect: setSelectedFaderId,
     };
   }, [
@@ -71,7 +70,6 @@ const FaderLayout = ({ height, width, config, userSplits }: Props) => {
     userSplits,
     userSections,
     selectedFaderId,
-    scrollPosition,
     setSelectedFaderId,
   ]);
 
